@@ -1,7 +1,8 @@
 import React, {useState} from 'react'
-import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { Formik, Form, ErrorMessage } from 'formik';
+import {InputGroup} from "@blueprintjs/core";
 
-function Formy(){
+function Formy({schema}){
   return <Formik
     initialValues={{ username: '', password: '' }}
     validate={values => {
@@ -10,6 +11,9 @@ function Formy(){
         errors.username = 'Email is Required';
       } else if (values.username.length<6) {
         errors.username = 'Username too short';
+      }
+      if(!values.password || values.password.length<6) {
+        errors.password = 'Password too short'
       }
       return errors;
     }}
@@ -20,18 +24,34 @@ function Formy(){
       }, 400);
     }}
   >
-    {({ isSubmitting }) => (
-      <Form style={{display:'flex',flexDirection:'column',alignItems:'center'}}>
-        <Field type="text" name="username" />
-        <ErrorMessage name="username" component="div" />
-        <Field type="password" name="password" />
-        <ErrorMessage name="password" component="div" />
+    {({ isSubmitting, setFieldValue, onBlur, onChange, errors }) => {
+      return <Form style={{display:'flex',flexDirection:'column',alignItems:'center'}}>
+        {schema.map((f,i)=>{
+          return <Field key={i} type={f.type} 
+            name={f.name} onBlur={onBlur}
+            onChange={e=> setFieldValue(f.name,e.target.value)}
+            error={errors[f.name]}
+          />
+        })}
         <button type="submit" disabled={isSubmitting}>
           Submit
         </button>
       </Form>
-    )}
+    }}
   </Formik>
+}
+
+function Field({type,name,onChange,onBlur,error}){
+  return <div style={{margin:'10px 0'}}>
+    <InputGroup 
+      name={name}
+      type={type}
+      placeholder={'Enter your '+name}
+      onChange={onChange}
+      onBlur={onBlur}
+    />
+    <div style={{color:'red'}}>{error}</div>
+  </div>
 }
 
 export default Formy
